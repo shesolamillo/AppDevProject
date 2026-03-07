@@ -10,6 +10,7 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
+import { useSelector } from 'react-redux';
 import { ROUTES } from '../utils';
 
 // Sample product data (replace with real data later)
@@ -44,6 +45,23 @@ const CATEGORIES = ['All', 'T-Shirts', 'Hoodies', 'Jeans', 'Shoes', 'Accessories
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const { user } = useSelector(state => state.auth);
+
+  // Get user's first name for greeting
+  const getGreeting = () => {
+    if (user && user.name) {
+      const firstName = user.name.split(' ')[0];
+      return `Hello, ${firstName}!`;
+    }
+    return 'Welcome!';
+  };
+
+  const getSubtitle = () => {
+    if (user) {
+      return 'Ready to shop?';
+    }
+    return 'Discover your style';
+  };
 
   const renderProduct = ({ item }) => (
     <TouchableOpacity
@@ -93,8 +111,8 @@ const HomeScreen = () => {
             resizeMode="contain"
           />
           <View style={{ marginLeft: 12 }}>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333' }}>Welcome!</Text>
-            <Text style={{ fontSize: 14, color: '#666' }}>Discover your style</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333' }}>{getGreeting()}</Text>
+            <Text style={{ fontSize: 14, color: '#666' }}>{getSubtitle()}</Text>
           </View>
           {/* Profile button - now with onPress */}
           <TouchableOpacity
@@ -173,7 +191,7 @@ const HomeScreen = () => {
         </View>
 
         {/* Your Original Green Button */}
-        <View style={{ alignItems: 'center', marginVertical: 30 }}>
+        {/*<View style={{ alignItems: 'center', marginVertical: 30 }}>
           <View style={{ width: 80, height: 2, backgroundColor: '#007AFF', marginBottom: 15 }} />
           <Text style={{ fontSize: 18, color: '#666', marginBottom: 20 }}>
             Explore More
@@ -196,7 +214,7 @@ const HomeScreen = () => {
               </Text>
             </View>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Footer */}
         <View style={{ paddingBottom: 20, alignItems: 'center' }}>

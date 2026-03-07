@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, Text, View, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import Checkbox from '../../components/Checkbox';
+import { userRegister, resetRegister } from '../../app/reducers/auth';
 import { ROUTES } from '../../utils';
 
 const Register = ({ setIsAuthenticated }) => {
@@ -12,6 +14,10 @@ const Register = ({ setIsAuthenticated }) => {
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  // Get auth state from Redux
+  const { user, isLoading, isError, errorMessage } = useSelector(state => state.auth);
 
   const handleRegister = () => {
     if (!fullName || !email || !password) {
@@ -22,20 +28,34 @@ const Register = ({ setIsAuthenticated }) => {
       Alert.alert('Error', 'You must agree to the processing of personal data');
       return;
     }
-    // Proceed with registration
-    Alert.alert(
-      'Registration Successful',
-      'Thank you for registering! Please log in with your credentials.',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate(ROUTES.LOGIN), // 2. Pumunta sa Login
-        },
-      ]
-    );
-    
-    
+    dispatch(userRegister({ username: fullName, email, password }));
   };
+
+  // Handle successful registration
+  useEffect(() => {
+    if (user) {
+      Alert.alert(
+        'Registration Successful',
+        'Thank you for registering! Please log in with your credentials.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate(ROUTES.LOGIN);
+              dispatch(resetRegister());
+            },
+          },
+        ]
+      );
+    }
+  }, [user, navigation, dispatch]);
+
+  // Handle registration errors
+  useEffect(() => {
+    if (isError && errorMessage) {
+      Alert.alert('Registration Error', errorMessage);
+    }
+  }, [isError, errorMessage]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, backgroundColor: '#fff' }}>
@@ -80,7 +100,12 @@ const Register = ({ setIsAuthenticated }) => {
         />
       </View>
 
-      <CustomButton label="Sign up" onPress={handleRegister} containerStyle={{ marginBottom: 24 }} />
+      <CustomButton
+        label="Sign up"
+        onPress={handleRegister}
+        loading={isLoading}
+        containerStyle={{ marginBottom: 24 }}
+      />
 
       <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
         <Text>Already have an account? </Text>

@@ -5,8 +5,15 @@ import { Platform, StatusBar, useColorScheme } from 'react-native';
 //import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 //import AppNavigationNi from './src/navigations';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import rootSaga from './src/app/sagas';
+import configureStore from './src/app/reducers';
 import AuthNav from './src/navigations/AuthNav';
 import MainNav from './src/navigations/MainNav';
+
+const { store, persistor, runSaga } = configureStore();
+runSaga(rootSaga);
 
 const App = () => {
 
@@ -21,15 +28,19 @@ const App = () => {
   }, [isDarkMode]);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer >
-        {isAuthenticated ? ( 
-          <MainNav />
-        ) : (
-          <AuthNav setIsAuthenticated={setIsAuthenticated} />
-        )}
-      </NavigationContainer>
-    </GestureHandlerRootView>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <NavigationContainer >
+            {isAuthenticated ? (
+              <MainNav />
+            ) : (
+              <AuthNav setIsAuthenticated={setIsAuthenticated} />
+            )}
+          </NavigationContainer>
+        </GestureHandlerRootView>
+      </PersistGate>
+    </Provider>
   );
 };
 

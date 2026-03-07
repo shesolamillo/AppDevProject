@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, Text, View, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import Checkbox from '../../components/Checkbox';
+import { userLogin, resetLogin } from '../../app/reducers/auth';
 import { ROUTES } from '../../utils';
 
 const Login = ({ setIsAuthenticated }) => {
@@ -11,14 +13,33 @@ const Login = ({ setIsAuthenticated }) => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  // Get auth state from Redux
+  const { user, isLoading, isError, errorMessage } = useSelector(state => state.auth);
 
   const handleLogin = () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    setIsAuthenticated(true)
+    dispatch(userLogin({ email, password }));
   };
+
+  // Handle successful login
+  useEffect(() => {
+    if (user) {
+      setIsAuthenticated(true);
+      dispatch(resetLogin());
+    }
+  }, [user, setIsAuthenticated, dispatch]);
+
+  // Handle login errors
+  useEffect(() => {
+    if (isError && errorMessage) {
+      Alert.alert('Login Error', errorMessage);
+    }
+  }, [isError, errorMessage]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, backgroundColor: '#fff' }}>
@@ -58,7 +79,12 @@ const Login = ({ setIsAuthenticated }) => {
       </View>
 
       {/* Sign in button */}
-      <CustomButton label="Sign in" onPress={handleLogin} containerStyle={{ marginBottom: 24 }} />
+      <CustomButton
+        label="Sign in"
+        onPress={handleLogin}
+        loading={isLoading}
+        containerStyle={{ marginBottom: 24 }}
+      />
 
       {/* Social sign-in */}
       <View style={{ alignItems: 'center', marginBottom: 24 }}>

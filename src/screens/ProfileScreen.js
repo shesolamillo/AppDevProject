@@ -6,18 +6,46 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Alert,
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { userLogout } from '../app/reducers/auth';
 import { ROUTES } from '../utils';
 
-const ProfileScreen = ({ navigation }) => {
-  // Sample user data (replace with actual data from your backend/Redux later)
-  const user = {
+const ProfileScreen = ({ navigation, setIsAuthenticated }) => {
+  const dispatch = useDispatch();
+  const { user } = useSelector(state => state.auth);
+
+  // Use Redux user data or fallback to sample data
+  const userData = user || {
     name: 'Juan Dela Cruz',
     email: 'juan.delacruz@email.com',
     memberSince: 'January 2024',
     orders: 12,
     wishlist: 8,
     addresses: 3,
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(userLogout());
+            setIsAuthenticated(false);
+            navigation.navigate(ROUTES.LOGIN);
+          },
+        },
+      ]
+    );
   };
 
   const MenuItem = ({ icon, title, onPress, badge }) => (
@@ -130,13 +158,13 @@ const ProfileScreen = ({ navigation }) => {
 
           {/* User Name and Email */}
           <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333', marginTop: 15 }}>
-            {user.name}
+            {userData.name}
           </Text>
           <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>
-            {user.email}
+            {userData.email}
           </Text>
           <Text style={{ fontSize: 12, color: '#999', marginTop: 5 }}>
-            Member since {user.memberSince}
+            Member since {userData.memberSince}
           </Text>
 
           {/* Stats Cards */}
@@ -149,9 +177,9 @@ const ProfileScreen = ({ navigation }) => {
             borderTopWidth: 1,
             borderTopColor: '#f0f0f0',
           }}>
-            <StatCard number={user.orders} label="Orders" />
-            <StatCard number={user.wishlist} label="Wishlist" />
-            <StatCard number={user.addresses} label="Addresses" />
+            <StatCard number={userData.orders} label="Orders" />
+            <StatCard number={userData.wishlist} label="Wishlist" />
+            <StatCard number={userData.addresses} label="Addresses" />
           </View>
         </View>
 
@@ -190,6 +218,7 @@ const ProfileScreen = ({ navigation }) => {
 
         {/* Logout Button */}
         <TouchableOpacity
+          onPress={handleLogout}
           style={{
             backgroundColor: '#ff3b30',
             marginHorizontal: 20,
